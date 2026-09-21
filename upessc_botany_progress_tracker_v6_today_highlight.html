@@ -1,0 +1,1478 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>UPESSC Botany Progress Tracker</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #fff;
+      --text: #172033;
+      --muted: #687386;
+      --accent: #2563eb;
+      --green: #0f9f6e;
+      --line: #e6eaf0
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text)
+    }
+
+    .wrap {
+      max-width: 1120px;
+      margin: auto;
+      padding: 22px 16px 60px
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #111827, #123a63);
+      color: white;
+      border-radius: 24px;
+      padding: 26px;
+      box-shadow: 0 12px 35px rgba(30, 50, 90, .10)
+    }
+
+    .hero h1 {
+      margin: 0 0 7px;
+      font-size: clamp(28px, 4vw, 44px)
+    }
+
+    .hero p {
+      margin: 0;
+      color: #d7deea;
+      line-height: 1.55
+    }
+
+    .stats {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px
+    }
+
+    .stat {
+      background: #ffffff14;
+      border: 1px solid #ffffff20;
+      border-radius: 15px;
+      padding: 12px 14px;
+      min-width: 155px
+    }
+
+    .stat b {
+      display: block;
+      font-size: 22px;
+      margin-top: 3px
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 18px 0
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: white;
+      box-shadow: 0 4px 14px #0000000d
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white
+    }
+
+    .danger {
+      color: #b42318;
+      background: #fff4f3
+    }
+
+    .card,
+    .phase,
+    .today {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 8px 28px rgba(24, 39, 75, .05)
+    }
+
+    .card {
+      padding: 18px;
+      margin-bottom: 16px
+    }
+
+    .progress-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px
+    }
+
+    .progress-head h2 {
+      font-size: 19px;
+      margin: 0
+    }
+
+    #progressText {
+      font-weight: 800;
+      color: var(--muted)
+    }
+
+    .bar {
+      height: 13px;
+      background: #edf1f6;
+      border-radius: 99px;
+      overflow: hidden
+    }
+
+    #progressBar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      transition: .25s
+    }
+
+    .today {
+      padding: 20px;
+      margin: 16px 0;
+      background: linear-gradient(135deg, #fff8df, #eef8ff);
+      border: 2px solid #f4c15d
+    }
+
+    .today h3 {
+      margin: 0 0 10px;
+      font-size: 20px
+    }
+
+    .today-date {
+      display: inline-block;
+      background: #111827;
+      color: white;
+      font-weight: 900;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px
+    }
+
+    .today-task {
+      font-size: 18px;
+      font-weight: 900;
+      margin: 0 0 7px
+    }
+
+    .today-syllabus {
+      margin: 0;
+      color: #374151;
+      line-height: 1.55
+    }
+
+    .today-badge {
+      display: inline-block;
+      margin-top: 10px;
+      background: #2563eb;
+      color: white;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 6px 9px;
+      border-radius: 999px
+    }
+
+    .section-title {
+      font-size: 24px;
+      margin: 24px 0 12px
+    }
+
+    .phase {
+      overflow: hidden;
+      margin: 0 0 15px
+    }
+
+    .phase-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px 18px;
+      background: #fbfcfe;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      user-select: none
+    }
+
+    .phase-head h3 {
+      margin: 0;
+      font-size: 18px
+    }
+
+    .phase-head small {
+      color: var(--muted)
+    }
+
+    .phase-head-right {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .chev {
+      font-size: 18px;
+      transition: transform .2s ease
+    }
+
+    .phase.collapsed .chev {
+      transform: rotate(-90deg)
+    }
+
+    .phase.collapsed .phase-body {
+      display: none
+    }
+
+    .phase-body {
+      padding: 7px 13px 13px
+    }
+
+    .task {
+      display: grid;
+      grid-template-columns: auto 96px 1fr auto;
+      gap: 12px;
+      align-items: start;
+      padding: 13px 7px;
+      border-bottom: 1px dashed #e6eaf0
+    }
+
+    .task:last-child {
+      border-bottom: 0
+    }
+
+    .task.current {
+      background: linear-gradient(135deg, #fff7d6, #fffdf2);
+      border: 2px solid #f59e0b;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(245, 158, 11, .14);
+      position: relative
+    }
+
+    .task.current:before {
+      content: "TODAY";
+      position: absolute;
+      right: 100px;
+      top: 8px;
+      background: #f59e0b;
+      color: white;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      padding: 4px 7px;
+      border-radius: 999px
+    }
+
+    .task.done {
+      opacity: .58
+    }
+
+    .task.done .task-title,
+    .task.done .task-desc,
+    .task.done .date {
+      text-decoration: line-through
+    }
+
+    .task-check {
+      width: 22px;
+      height: 22px;
+      accent-color: var(--accent);
+      -webkit-appearance: auto
+    }
+
+    .date {
+      font-weight: 800;
+      color: #40516c
+    }
+
+    .task-title {
+      font-weight: 800
+    }
+
+    .task-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+      margin-top: 4px
+    }
+
+    .badge {
+      font-size: 12px;
+      font-weight: 800;
+      background: #eef2ff;
+      color: #3730a3;
+      padding: 6px 9px;
+      border-radius: 99px;
+      white-space: nowrap
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 130px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 13px;
+      font: inherit;
+      resize: vertical
+    }
+
+    .foot {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 24px
+    }
+
+    @media(max-width:700px) {
+      .task {
+        grid-template-columns: auto 1fr
+      }
+
+      .date,
+      .task>div:nth-child(3),
+      .badge {
+        grid-column: 2
+      }
+
+      .badge {
+        justify-self: start
+      }
+
+      .task.current:before {
+        right: 10px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>UPESSC Botany — Mission 20 Nov</h1>
+      <p>Your complete daily study roadmap. The current date and today's mapped syllabus are highlighted automatically.
+        Tick tasks as you finish them.</p>
+      <div class="stats">
+        <div class="stat">Exam date<b>20 Nov 2026</b></div>
+        <div class="stat">Paper pattern<b>90 Botany + 30 GK</b></div>
+        <div class="stat">Total questions<b>120 MCQs</b></div>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button class="primary" id="jumpBtn">Jump to today's syllabus</button>
+      <button id="expandAllBtn">Expand all</button>
+      <button id="collapseAllBtn">Collapse all</button>
+      <button id="exportBtn">Export progress</button>
+      <button id="importBtn">Import progress</button>
+      <input type="file" id="importFile" accept=".json" hidden>
+      <button class="danger" id="resetBtn">Reset all</button>
+    </div>
+
+    <section class="card">
+      <div class="progress-head">
+        <h2>Overall progress</h2><span id="progressText">0%</span>
+      </div>
+      <div class="bar">
+        <div id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+      </div>
+    </section>
+
+    <section class="today">
+      <h3>Today's syllabus</h3>
+      <div class="today-date" id="todayDate">Loading date…</div>
+      <div id="todayText">Your mapped syllabus for today will appear here.</div>
+    </section>
+
+    <h2 class="section-title">Daily Study Roadmap</h2>
+
+    <section class="phase" data-phase="0">
+      <div class="phase-head">
+        <div>
+          <h3>Phase I — Cell Biology</h3><small>19–22 Sep</small>
+        </div>
+        <div class="phase-head-right"><strong class="phase-progress">0/4</strong><span class="chev">▾</span></div>
+      </div>
+      <div class="phase-body">
+        <div class="task" data-id="0-0" data-date="2026-09-19" id="task-0-0">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">19 Sep</div>
+          <div>
+            <div class="task-title">P.S. Verma: Ch. 5 + Ch. 12</div>
+            <div class="task-desc">Prokaryotic/eukaryotic cells; plasma membrane; fluid mosaic model; diffusion,
+              facilitated diffusion, active transport.</div>
+          </div>
+          <div class="badge">60 MCQs</div>
+        </div>
+        <div class="task" data-id="0-1" data-date="2026-09-20" id="task-0-1">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">20 Sep</div>
+          <div>
+            <div class="task-title">Cell wall + adhesion + vesicular transport</div>
+            <div class="task-desc">Ch. 13, relevant Ch. 14 and Ch. 23; plasmodesmata, ECM, endocytosis/exocytosis, SNARE
+              basics.</div>
+          </div>
+          <div class="badge">70 MCQs</div>
+        </div>
+        <div class="task" data-id="0-2" data-date="2026-09-21" id="task-0-2">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">21 Sep</div>
+          <div>
+            <div class="task-title">Cell organelles</div>
+            <div class="task-desc">Mitochondria, chloroplast, ER, ribosome and Golgi; structure, function and key
+              comparisons.</div>
+          </div>
+          <div class="badge">80 MCQs</div>
+        </div>
+        <div class="task" data-id="0-3" data-date="2026-09-22" id="task-0-3">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">22 Sep</div>
+          <div>
+            <div class="task-title">Cytoskeleton + nucleus + chromosomes</div>
+            <div class="task-desc">Ch. 11, 24, 25, 31, 32; chromatin, nucleosomes, heterochromatin/euchromatin, polytene
+              chromosomes.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+      </div>
+    </section>
+    <section class="phase" data-phase="1">
+      <div class="phase-head">
+        <div>
+          <h3>Phase II — Plant Physiology & Biochemistry</h3><small>23 Sep–3 Oct</small>
+        </div>
+        <div class="phase-head-right"><strong class="phase-progress">0/11</strong><span class="chev">▾</span></div>
+      </div>
+      <div class="phase-body">
+        <div class="task" data-id="1-0" data-date="2026-09-23" id="task-1-0">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">23 Sep</div>
+          <div>
+            <div class="task-title">Water relations</div>
+            <div class="task-desc">S.N. Pandey Ch. 2–3: diffusion, osmosis, water potential, plasmolysis, imbibition,
+              water absorption.</div>
+          </div>
+          <div class="badge">70 MCQs</div>
+        </div>
+        <div class="task" data-id="1-1" data-date="2026-09-24" id="task-1-1">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">24 Sep</div>
+          <div>
+            <div class="task-title">Transpiration + ascent of sap</div>
+            <div class="task-desc">Stomata, cohesion-tension theory, factors affecting transpiration.</div>
+          </div>
+          <div class="badge">70 MCQs</div>
+        </div>
+        <div class="task" data-id="1-2" data-date="2026-09-25" id="task-1-2">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">25 Sep</div>
+          <div>
+            <div class="task-title">Mineral nutrition + salt absorption</div>
+            <div class="task-desc">Essential elements, deficiency symptoms, active/passive ion uptake.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="1-3" data-date="2026-09-26" id="task-1-3">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">26 Sep</div>
+          <div>
+            <div class="task-title">Photosynthetic apparatus</div>
+            <div class="task-desc">Pigments, action spectrum, PSI/PSII, Z-scheme, electron transport.</div>
+          </div>
+          <div class="badge">80 MCQs</div>
+        </div>
+        <div class="task" data-id="1-4" data-date="2026-09-27" id="task-1-4">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">27 Sep</div>
+          <div>
+            <div class="task-title">Carbon fixation + photorespiration</div>
+            <div class="task-desc">Calvin cycle, C3/C4/CAM, Kranz anatomy, Rubisco/PEPCase.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="1-5" data-date="2026-09-28" id="task-1-5">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">28 Sep</div>
+          <div>
+            <div class="task-title">Respiration</div>
+            <div class="task-desc">Glycolysis, Krebs, ETC, oxidative phosphorylation, chemiosmosis, RQ, fermentation.
+            </div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="1-6" data-date="2026-09-29" id="task-1-6">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">29 Sep</div>
+          <div>
+            <div class="task-title">Nitrogen + fat metabolism</div>
+            <div class="task-desc">Nitrogenase, GS-GOGAT, β-oxidation, fatty-acid synthesis.</div>
+          </div>
+          <div class="badge">90 MCQs</div>
+        </div>
+        <div class="task" data-id="1-7" data-date="2026-09-30" id="task-1-7">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">30 Sep</div>
+          <div>
+            <div class="task-title">Enzymes</div>
+            <div class="task-desc">Classification, Km/Vmax, inhibition, regulation, coenzymes.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="1-8" data-date="2026-10-01" id="task-1-8">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">01 Oct</div>
+          <div>
+            <div class="task-title">Growth + plant hormones</div>
+            <div class="task-desc">Auxin, GA, cytokinin, ABA, ethylene; make one master comparison table.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="1-9" data-date="2026-10-02" id="task-1-9">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">02 Oct</div>
+          <div>
+            <div class="task-title">Photoperiodism + vernalization + photobiology</div>
+            <div class="task-desc">Phytochrome, cryptochrome, plant movements, senescence.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="1-10" data-date="2026-10-03" id="task-1-10">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">03 Oct</div>
+          <div>
+            <div class="task-title">Fruit, seed, dormancy, stress</div>
+            <div class="task-desc">Fruiting, germination, dormancy, stress physiology; revision.</div>
+          </div>
+          <div class="badge">150 mixed</div>
+        </div>
+      </div>
+    </section>
+    <section class="phase" data-phase="2">
+      <div class="phase-head">
+        <div>
+          <h3>Phase III — Genetics & Molecular Biology</h3><small>4–15 Oct</small>
+        </div>
+        <div class="phase-head-right"><strong class="phase-progress">0/12</strong><span class="chev">▾</span></div>
+      </div>
+      <div class="phase-body">
+        <div class="task" data-id="2-0" data-date="2026-10-04" id="task-2-0">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">04 Oct</div>
+          <div>
+            <div class="task-title">Basic genetics + gene vs allele</div>
+            <div class="task-desc">P.K. Gupta Ch. 20 + 26: Mendel, polygenes, penetrance, pseudoalleles,
+              cistron/recon/muton.</div>
+          </div>
+          <div class="badge">80 MCQs</div>
+        </div>
+        <div class="task" data-id="2-1" data-date="2026-10-05" id="task-2-1">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">05 Oct</div>
+          <div>
+            <div class="task-title">Linkage & crossing over</div>
+            <div class="task-desc">Ch. 22: recombination, mapping, interference/coincidence, numericals.</div>
+          </div>
+          <div class="badge">80 MCQs</div>
+        </div>
+        <div class="task" data-id="2-2" data-date="2026-10-06" id="task-2-2">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">06 Oct</div>
+          <div>
+            <div class="task-title">Cytoplasmic inheritance + chromosome changes</div>
+            <div class="task-desc">Male sterility, plastid inheritance, aneuploidy, polyploidy.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="2-3" data-date="2026-10-07" id="task-2-3">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">07 Oct</div>
+          <div>
+            <div class="task-title">Mutations</div>
+            <div class="task-desc">Molecular mutation, mutagens, types and effects.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="2-4" data-date="2026-10-08" id="task-2-4">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">08 Oct</div>
+          <div>
+            <div class="task-title">DNA replication & repair</div>
+            <div class="task-desc">Polymerases, leading/lagging, telomerase, reverse transcriptase, repair systems.
+            </div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="2-5" data-date="2026-10-09" id="task-2-5">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">09 Oct</div>
+          <div>
+            <div class="task-title">Chromatin + gene structure</div>
+            <div class="task-desc">Nucleosome, histones, solenoid, split genes, overlapping genes, pseudogenes.</div>
+          </div>
+          <div class="badge">90 MCQs</div>
+        </div>
+        <div class="task" data-id="2-6" data-date="2026-10-10" id="task-2-6">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">10 Oct</div>
+          <div>
+            <div class="task-title">Genetic code + tRNA</div>
+            <div class="task-desc">Wobble, degeneracy, codons, aminoacyl-tRNA synthetases.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="2-7" data-date="2026-10-11" id="task-2-7">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">11 Oct</div>
+          <div>
+            <div class="task-title">Transcription</div>
+            <div class="task-desc">Prokaryotic and eukaryotic transcription, RNA polymerases and promoters.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="2-8" data-date="2026-10-12" id="task-2-8">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">12 Oct</div>
+          <div>
+            <div class="task-title">RNA processing + translation</div>
+            <div class="task-desc">Splicing, editing, ribozymes, cap/poly-A, translation, protein folding.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="2-9" data-date="2026-10-13" id="task-2-9">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">13 Oct</div>
+          <div>
+            <div class="task-title">Gene regulation</div>
+            <div class="task-desc">lac/trp operons, enhancers/silencers, transcriptional and post-transcriptional
+              control.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="2-10" data-date="2026-10-14" id="task-2-10">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">14 Oct</div>
+          <div>
+            <div class="task-title">Multigene families + evolution</div>
+            <div class="task-desc">Multigene families, evidence/theories of evolution, phylogeny basics.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="2-11" data-date="2026-10-15" id="task-2-11">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">15 Oct</div>
+          <div>
+            <div class="task-title">Genetics mega-revision</div>
+            <div class="task-desc">Mixed revision and error correction.</div>
+          </div>
+          <div class="badge">200 MCQs</div>
+        </div>
+      </div>
+    </section>
+    <section class="phase" data-phase="3">
+      <div class="phase-head">
+        <div>
+          <h3>Phase IV — Biotechnology</h3><small>16–19 Oct</small>
+        </div>
+        <div class="phase-head-right"><strong class="phase-progress">0/4</strong><span class="chev">▾</span></div>
+      </div>
+      <div class="phase-body">
+        <div class="task" data-id="3-0" data-date="2026-10-16" id="task-3-0">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">16 Oct</div>
+          <div>
+            <div class="task-title">Recombinant DNA + PCR + blotting</div>
+            <div class="task-desc">Restriction enzymes, vectors, libraries, probes, Southern/Northern/Western, PCR.
+            </div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="3-1" data-date="2026-10-17" id="task-3-1">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">17 Oct</div>
+          <div>
+            <div class="task-title">Molecular markers + maps</div>
+            <div class="task-desc">RFLP, RAPD, SSR, VNTR, STS/EST, linkage vs physical mapping.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="3-2" data-date="2026-10-18" id="task-3-2">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">18 Oct</div>
+          <div>
+            <div class="task-title">DNA sequencing</div>
+            <div class="task-desc">Sanger, Maxam-Gilbert, automated sequencing, DNA fingerprinting.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="3-3" data-date="2026-10-19" id="task-3-3">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">19 Oct</div>
+          <div>
+            <div class="task-title">Gene transfer + transgenics</div>
+            <div class="task-desc">Plant gene transfer, transgenic crops; supplementary: Cre-lox, FISH, plantibodies,
+              edible vaccines, biosafety.</div>
+          </div>
+          <div class="badge">150 MCQs</div>
+        </div>
+      </div>
+    </section>
+    <section class="phase" data-phase="4">
+      <div class="phase-head">
+        <div>
+          <h3>Phase V — Ecology & Environment</h3><small>20–28 Oct</small>
+        </div>
+        <div class="phase-head-right"><strong class="phase-progress">0/9</strong><span class="chev">▾</span></div>
+      </div>
+      <div class="phase-body">
+        <div class="task" data-id="4-0" data-date="2026-10-20" id="task-4-0">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">20 Oct</div>
+          <div>
+            <div class="task-title">Ecological factors + soil + interactions</div>
+            <div class="task-desc">P.D. Sharma: climatic/edaphic factors, biotic interactions, Liebig and Shelford laws.
+            </div>
+          </div>
+          <div class="badge">80 MCQs</div>
+        </div>
+        <div class="task" data-id="4-1" data-date="2026-10-21" id="task-4-1">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">21 Oct</div>
+          <div>
+            <div class="task-title">Population + community</div>
+            <div class="task-desc">Growth curves, carrying capacity, natality/mortality, ecotone, edge effect.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="4-2" data-date="2026-10-22" id="task-4-2">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">22 Oct</div>
+          <div>
+            <div class="task-title">Succession + ecosystem</div>
+            <div class="task-desc">Seres, climax, energy flow, productivity, pyramids, biogeochemical cycles.</div>
+          </div>
+          <div class="badge">120 MCQs</div>
+        </div>
+        <div class="task" data-id="4-3" data-date="2026-10-23" id="task-4-3">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">23 Oct</div>
+          <div>
+            <div class="task-title">Natural resources + forests</div>
+            <div class="task-desc">Deforestation, afforestation, social forestry, desertification.</div>
+          </div>
+          <div class="badge">80 MCQs</div>
+        </div>
+        <div class="task" data-id="4-4" data-date="2026-10-24" id="task-4-4">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">24 Oct</div>
+          <div>
+            <div class="task-title">Biodiversity & conservation</div>
+            <div class="task-desc">IUCN, Red Data Book, hotspots, protected areas, biosphere reserves, CBD.</div>
+          </div>
+          <div class="badge">120 MCQs</div>
+        </div>
+        <div class="task" data-id="4-5" data-date="2026-10-25" id="task-4-5">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">25 Oct</div>
+          <div>
+            <div class="task-title">Climate change + air pollution</div>
+            <div class="task-desc">GHGs, ozone depletion, acid rain, smog and control.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="4-6" data-date="2026-10-26" id="task-4-6">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">26 Oct</div>
+          <div>
+            <div class="task-title">Water pollution</div>
+            <div class="task-desc">Eutrophication, biomagnification, heavy metals, water quality.</div>
+          </div>
+          <div class="badge">80 MCQs</div>
+        </div>
+        <div class="task" data-id="4-7" data-date="2026-10-27" id="task-4-7">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">27 Oct</div>
+          <div>
+            <div class="task-title">Bioremediation + EIA + laws</div>
+            <div class="task-desc">Phytoremediation, monitoring, EIA, environmental laws.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="4-8" data-date="2026-10-28" id="task-4-8">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">28 Oct</div>
+          <div>
+            <div class="task-title">Plant adaptations + ecology revision</div>
+            <div class="task-desc">Hydrophytes/xerophytes/halophytes + Indian phytogeography supplement.</div>
+          </div>
+          <div class="badge">200 MCQs</div>
+        </div>
+      </div>
+    </section>
+    <section class="phase" data-phase="5">
+      <div class="phase-head">
+        <div>
+          <h3>Phase VI — Remaining Syllabus</h3><small>29 Oct–7 Nov</small>
+        </div>
+        <div class="phase-head-right"><strong class="phase-progress">0/10</strong><span class="chev">▾</span></div>
+      </div>
+      <div class="phase-body">
+        <div class="task" data-id="5-0" data-date="2026-10-29" id="task-5-0">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">29 Oct</div>
+          <div>
+            <div class="task-title">Microbiology</div>
+            <div class="task-desc">Viruses, bacteriophages, bacteria, mycoplasma, phytoplasma, endophytes, applications.
+            </div>
+          </div>
+          <div class="badge">80 MCQs</div>
+        </div>
+        <div class="task" data-id="5-1" data-date="2026-10-30" id="task-5-1">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">30 Oct</div>
+          <div>
+            <div class="task-title">Plant Pathology</div>
+            <div class="task-desc">Important diseases, infection, plant defence, PR proteins, biological control,
+              mycotoxins.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="5-2" data-date="2026-10-31" id="task-5-2">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">31 Oct</div>
+          <div>
+            <div class="task-title">Algae + fungi + lichens</div>
+            <div class="task-desc">Salient features, reproduction, evolution, ecological/economic importance.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="5-3" data-date="2026-11-01" id="task-5-3">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">01 Nov</div>
+          <div>
+            <div class="task-title">Bryophytes + pteridophytes</div>
+            <div class="task-desc">Life cycles, evolution, heterospory, importance.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="5-4" data-date="2026-11-02" id="task-5-4">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">02 Nov</div>
+          <div>
+            <div class="task-title">Gymnosperms + palaeobotany</div>
+            <div class="task-desc">Major orders, fossil groups, geological time scale, fossil types.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="5-5" data-date="2026-11-03" id="task-5-5">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">03 Nov</div>
+          <div>
+            <div class="task-title">Angiosperm taxonomy</div>
+            <div class="task-desc">Nomenclature, numerical/chemo/molecular taxonomy, classification systems.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="5-6" data-date="2026-11-04" id="task-5-6">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">04 Nov</div>
+          <div>
+            <div class="task-title">Plant families — Part I</div>
+            <div class="task-desc">Magnoliaceae, Ranunculaceae, Capparidaceae, Cucurbitaceae, Apiaceae, Rubiaceae,
+              Asteraceae, Apocynaceae.</div>
+          </div>
+          <div class="badge">120 MCQs</div>
+        </div>
+        <div class="task" data-id="5-7" data-date="2026-11-05" id="task-5-7">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">05 Nov</div>
+          <div>
+            <div class="task-title">Plant families — Part II</div>
+            <div class="task-desc">Solanaceae, Acanthaceae, Lamiaceae, Verbenaceae, Arecaceae, Liliaceae, Musaceae,
+              Orchidaceae, Poaceae.</div>
+          </div>
+          <div class="badge">120 MCQs</div>
+        </div>
+        <div class="task" data-id="5-8" data-date="2026-11-06" id="task-5-8">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">06 Nov</div>
+          <div>
+            <div class="task-title">Anatomy + embryology + palynology</div>
+            <div class="task-desc">Secondary growth, gametophytes, fertilization, endosperm, embryo, polyembryony,
+              apomixis.</div>
+          </div>
+          <div class="badge">100 MCQs</div>
+        </div>
+        <div class="task" data-id="5-9" data-date="2026-11-07" id="task-5-9">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">07 Nov</div>
+          <div>
+            <div class="task-title">Plant resources + tissue culture + biostatistics</div>
+            <div class="task-desc">Economic plants, ethnobotany, totipotency, hybrids/cybrids, micropropagation, SD/CV,
+              probability, tests, correlation/regression.</div>
+          </div>
+          <div class="badge">150 MCQs</div>
+        </div>
+      </div>
+    </section>
+    <section class="phase" data-phase="6">
+      <div class="phase-head">
+        <div>
+          <h3>Phase VII — High-Volume Revision</h3><small>8–13 Nov</small>
+        </div>
+        <div class="phase-head-right"><strong class="phase-progress">0/6</strong><span class="chev">▾</span></div>
+      </div>
+      <div class="phase-body">
+        <div class="task" data-id="6-0" data-date="2026-11-08" id="task-6-0">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">08 Nov</div>
+          <div>
+            <div class="task-title">Cell Biology + Physiology revision</div>
+            <div class="task-desc">Weak topics first; update error notebook.</div>
+          </div>
+          <div class="badge">250 MCQs</div>
+        </div>
+        <div class="task" data-id="6-1" data-date="2026-11-09" id="task-6-1">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">09 Nov</div>
+          <div>
+            <div class="task-title">Genetics + Molecular revision</div>
+            <div class="task-desc">Mapping, mutation, replication, transcription, translation.</div>
+          </div>
+          <div class="badge">250 MCQs</div>
+        </div>
+        <div class="task" data-id="6-2" data-date="2026-11-10" id="task-6-2">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">10 Nov</div>
+          <div>
+            <div class="task-title">Biotechnology + Statistics</div>
+            <div class="task-desc">PCR, markers, sequencing, gene transfer, probability/tests.</div>
+          </div>
+          <div class="badge">200 MCQs</div>
+        </div>
+        <div class="task" data-id="6-3" data-date="2026-11-11" id="task-6-3">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">11 Nov</div>
+          <div>
+            <div class="task-title">Ecology + Environment</div>
+            <div class="task-desc">Succession, ecosystem, biodiversity, pollution, EIA.</div>
+          </div>
+          <div class="badge">250 MCQs</div>
+        </div>
+        <div class="task" data-id="6-4" data-date="2026-11-12" id="task-6-4">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">12 Nov</div>
+          <div>
+            <div class="task-title">Taxonomy + Cryptogams + Gymnosperms</div>
+            <div class="task-desc">Families, nomenclature, life cycles, fossils.</div>
+          </div>
+          <div class="badge">250 MCQs</div>
+        </div>
+        <div class="task" data-id="6-5" data-date="2026-11-13" id="task-6-5">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">13 Nov</div>
+          <div>
+            <div class="task-title">Pathology + Tissue Culture + Economic Botany</div>
+            <div class="task-desc">Diseases, defence, culture methods, resources, embryology.</div>
+          </div>
+          <div class="badge">250 MCQs</div>
+        </div>
+      </div>
+    </section>
+    <section class="phase" data-phase="7">
+      <div class="phase-head">
+        <div>
+          <h3>Phase VIII — Exam Simulation</h3><small>14–20 Nov</small>
+        </div>
+        <div class="phase-head-right"><strong class="phase-progress">0/7</strong><span class="chev">▾</span></div>
+      </div>
+      <div class="phase-body">
+        <div class="task" data-id="7-0" data-date="2026-11-14" id="task-7-0">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">14 Nov</div>
+          <div>
+            <div class="task-title">Full Mock 1</div>
+            <div class="task-desc">120 questions / exam-time conditions: 90 Botany + 30 GK; analyse every error.</div>
+          </div>
+          <div class="badge">Mock</div>
+        </div>
+        <div class="task" data-id="7-1" data-date="2026-11-15" id="task-7-1">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">15 Nov</div>
+          <div>
+            <div class="task-title">Full Mock 2</div>
+            <div class="task-desc">120 questions: 90 Botany + 30 GK; repair Genetics + Physiology errors.</div>
+          </div>
+          <div class="badge">Mock</div>
+        </div>
+        <div class="task" data-id="7-2" data-date="2026-11-16" id="task-7-2">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">16 Nov</div>
+          <div>
+            <div class="task-title">Full Mock 3</div>
+            <div class="task-desc">120 questions: 90 Botany + 30 GK; repair Ecology + Taxonomy errors.</div>
+          </div>
+          <div class="badge">Mock</div>
+        </div>
+        <div class="task" data-id="7-3" data-date="2026-11-17" id="task-7-3">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">17 Nov</div>
+          <div>
+            <div class="task-title">Full Mock 4</div>
+            <div class="task-desc">120 questions: 90 Botany + 30 GK; repair Cell/Biotech/Pathology errors.</div>
+          </div>
+          <div class="badge">Mock</div>
+        </div>
+        <div class="task" data-id="7-4" data-date="2026-11-18" id="task-7-4">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">18 Nov</div>
+          <div>
+            <div class="task-title">Full Mock 5</div>
+            <div class="task-desc">120 questions: 90 Botany + 30 GK; final factual tables + GK.</div>
+          </div>
+          <div class="badge">Mock</div>
+        </div>
+        <div class="task" data-id="7-5" data-date="2026-11-19" id="task-7-5">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">19 Nov</div>
+          <div>
+            <div class="task-title">Light revision only</div>
+            <div class="task-desc">Error notebook, families, hormones, pathogens, ecology facts, current affairs; sleep
+              early.</div>
+          </div>
+          <div class="badge">No heavy test</div>
+        </div>
+        <div class="task" data-id="7-6" data-date="2026-11-20" id="task-7-6">
+          <input class="task-check" type="checkbox" aria-label="Mark task complete">
+          <div class="date">20 Nov</div>
+          <div>
+            <div class="task-title">EXAM DAY</div>
+            <div class="task-desc">Execute calmly. No new material.</div>
+          </div>
+          <div class="badge">Exam</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3 style="margin-top:0">Quick notes / weak areas</h3>
+      <textarea id="notes"
+        placeholder="Example: revise linkage numericals, IUCN categories, C4 vs CAM, plant families..."></textarea>
+    </section>
+    <div class="foot">Safari-compatible version. Progress updates immediately even if local-file storage is restricted;
+      persistence uses browser storage when available. Use Export Progress for backup.</div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var KEY = "upessc_botany_progress_v5";
+      var OLD_KEYS = ["upessc_botany_progress_v4", "upessc_botany_progress_v2", "upessc_botany_progress_v1"];
+      var NOTEKEY = "upessc_botany_notes_v5";
+      var OLD_NOTES = ["upessc_botany_notes_v4", "upessc_botany_notes_v2", "upessc_botany_notes_v1"];
+      var COLLAPSEKEY = "upessc_botany_collapsed_v5";
+
+      function byId(id) { return document.getElementById(id); }
+      function toArray(nodes) { return Array.prototype.slice.call(nodes || []); }
+      function all(sel, root) { return toArray((root || document).querySelectorAll(sel)); }
+      function one(sel, root) { return (root || document).querySelector(sel); }
+
+      var tasks = all(".task");
+      var phases = all(".phase");
+      var state = {};
+      var collapsed = {};
+
+      function safeGet(key) {
+        try { return window.localStorage ? localStorage.getItem(key) : null; }
+        catch (e) { return null; }
+      }
+      function safeSet(key, value) {
+        try { if (window.localStorage) localStorage.setItem(key, value); }
+        catch (e) { }
+      }
+      function safeRemove(key) {
+        try { if (window.localStorage) localStorage.removeItem(key); }
+        catch (e) { }
+      }
+      function parseJSON(raw, fallback) {
+        if (!raw) return fallback;
+        try { return JSON.parse(raw); } catch (e) { return fallback; }
+      }
+
+      function loadState() {
+        var raw = safeGet(KEY);
+        var i;
+        if (!raw) {
+          for (i = 0; i < OLD_KEYS.length; i++) {
+            raw = safeGet(OLD_KEYS[i]);
+            if (raw) break;
+          }
+        }
+        state = parseJSON(raw, {});
+        collapsed = parseJSON(safeGet(COLLAPSEKEY), {});
+      }
+
+      function saveState() {
+        safeSet(KEY, JSON.stringify(state));
+      }
+      function saveCollapsed() {
+        safeSet(COLLAPSEKEY, JSON.stringify(collapsed));
+      }
+
+      function pad2(n) { return n < 10 ? "0" + n : String(n); }
+      function localISO() {
+        var d = new Date();
+        return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+      }
+
+      function hasClass(el, cls) {
+        return (" " + el.className + " ").indexOf(" " + cls + " ") !== -1;
+      }
+      function addClass(el, cls) {
+        if (!hasClass(el, cls)) el.className += (el.className ? " " : "") + cls;
+      }
+      function removeClass(el, cls) {
+        var re = new RegExp("(^|\\s)" + cls + "(?=\\s|$)", "g");
+        el.className = el.className.replace(re, " ").replace(/\s+/g, " ").replace(/^\s+|\s+$/g, "");
+      }
+      function setClass(el, cls, on) {
+        if (on) addClass(el, cls); else removeClass(el, cls);
+      }
+
+      function setCollapsed(phase, isCollapsed, persist) {
+        setClass(phase, "collapsed", !!isCollapsed);
+        var head = one(".phase-head", phase);
+        if (head) head.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+        if (persist !== false) {
+          collapsed[phase.getAttribute("data-phase")] = !!isCollapsed;
+          saveCollapsed();
+        }
+      }
+
+      function countDoneIn(list) {
+        var n = 0, i;
+        for (i = 0; i < list.length; i++) {
+          var cb = one(".task-check", list[i]);
+          if (cb && cb.checked) n++;
+        }
+        return n;
+      }
+
+      function updateProgress() {
+        var total = tasks.length;
+        var done = countDoneIn(tasks);
+        var pct = total ? Math.round((done / total) * 100) : 0;
+        var text = byId("progressText");
+        var bar = byId("progressBar");
+        var i, ts, pdone, pp;
+
+        if (text) text.innerHTML = pct + "% &bull; " + done + "/" + total + " tasks";
+        if (bar) {
+          bar.style.width = pct + "%";
+          bar.setAttribute("aria-valuenow", String(pct));
+          /* Safari sometimes delays local-file style painting. */
+          bar.style.display = "none";
+          bar.offsetHeight;
+          bar.style.display = "block";
+        }
+
+        for (i = 0; i < phases.length; i++) {
+          ts = all(".task", phases[i]);
+          pdone = countDoneIn(ts);
+          pp = one(".phase-progress", phases[i]);
+          if (pp) pp.innerHTML = pdone + "/" + ts.length;
+        }
+      }
+
+      function getTaskText(task, selector) {
+        var el = one(selector, task);
+        return el ? el.textContent || el.innerText || "" : "";
+      }
+
+      function firstUnfinishedTask() {
+        var i, cb;
+        for (i = 0; i < tasks.length; i++) {
+          cb = one(".task-check", tasks[i]);
+          if (!cb || !cb.checked) return tasks[i];
+        }
+        return null;
+      }
+
+      function updateToday() {
+        var iso = localISO();
+        var today = null;
+        var i, box, dateBox, next;
+
+        for (i = 0; i < tasks.length; i++) {
+          if (tasks[i].getAttribute("data-date") === iso) {
+            today = tasks[i];
+            setClass(tasks[i], "current", true);
+          } else {
+            setClass(tasks[i], "current", false);
+          }
+        }
+
+        box = byId("todayText");
+        dateBox = byId("todayDate");
+        if (!box) return;
+
+        var now = new Date();
+        var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        if (dateBox) {
+          dateBox.innerHTML = "Today • " + pad2(now.getDate()) + " " + monthNames[now.getMonth()] + " " + now.getFullYear();
+        }
+
+        if (today) {
+          var cb = one(".task-check", today);
+          var title = getTaskText(today, ".task-title");
+          var desc = getTaskText(today, ".task-desc");
+          var badge = getTaskText(today, ".badge");
+          box.innerHTML =
+            '<div class="today-task">' + title + (cb && cb.checked ? " ✅" : "") + '</div>' +
+            '<p class="today-syllabus"><b>Read / revise:</b> ' + desc + '</p>' +
+            '<span class="today-badge">' + badge + '</span>';
+        } else {
+          next = firstUnfinishedTask();
+          if (next) {
+            box.innerHTML =
+              '<div class="today-task">No task mapped to this calendar date</div>' +
+              '<p class="today-syllabus">Next unfinished syllabus: <b>' +
+              getTaskText(next, ".task-title") + '</b> — ' +
+              getTaskText(next, ".task-desc") + '</p>' +
+              '<span class="today-badge">' + getTaskText(next, ".badge") + '</span>';
+          } else {
+            box.innerHTML = '<div class="today-task">All roadmap tasks are complete.</div>';
+          }
+        }
+      }
+
+      function refresh() {
+        var i, id, cb, checked;
+        for (i = 0; i < tasks.length; i++) {
+          id = tasks[i].getAttribute("data-id");
+          cb = one(".task-check", tasks[i]);
+          checked = !!state[id];
+          if (cb) cb.checked = checked;
+          setClass(tasks[i], "done", checked);
+        }
+        updateProgress();
+        updateToday();
+      }
+
+      function findParentPhase(el) {
+        while (el && el !== document.body) {
+          if (hasClass(el, "phase")) return el;
+          el = el.parentNode;
+        }
+        return null;
+      }
+
+      function scrollToTask(task) {
+        if (!task) return;
+        var phase = findParentPhase(task);
+        if (phase) setCollapsed(phase, false, true);
+        try { task.scrollIntoView({ behavior: "smooth", block: "center" }); }
+        catch (e) { task.scrollIntoView(true); }
+      }
+
+      function bindEvents() {
+        var i, head, cb, phase;
+
+        for (i = 0; i < phases.length; i++) {
+          phase = phases[i];
+          head = one(".phase-head", phase);
+          if (head) {
+            head.setAttribute("role", "button");
+            head.setAttribute("tabindex", "0");
+            setCollapsed(phase, !!collapsed[phase.getAttribute("data-phase")], false);
+
+            (function (p, h) {
+              function togglePhase(e) {
+                /* Ignore clicks from form controls, if any are added later. */
+                var target = e ? (e.target || e.srcElement) : null;
+                if (target && /^(INPUT|BUTTON|A)$/.test(target.tagName)) return;
+                setCollapsed(p, !hasClass(p, "collapsed"), true);
+              }
+              h.onclick = togglePhase;
+              h.onkeydown = function (e) {
+                e = e || window.event;
+                var key = e.keyCode || e.which;
+                if (key === 13 || key === 32) {
+                  if (e.preventDefault) e.preventDefault();
+                  togglePhase(e);
+                }
+              };
+            })(phase, head);
+          }
+        }
+
+        for (i = 0; i < tasks.length; i++) {
+          cb = one(".task-check", tasks[i]);
+          if (cb) {
+            (function (task, checkbox) {
+              function changed() {
+                var id = task.getAttribute("data-id");
+                state[id] = !!checkbox.checked;
+                setClass(task, "done", !!checkbox.checked);
+                saveState();
+                updateProgress();
+                updateToday();
+              }
+              checkbox.onchange = changed;
+              checkbox.onclick = function () {
+                /* onchange is primary; timeout is a Safari-safe paint/update fallback. */
+                window.setTimeout(function () {
+                  if (!!state[task.getAttribute("data-id")] !== !!checkbox.checked) changed();
+                }, 0);
+              };
+            })(tasks[i], cb);
+          }
+        }
+
+        var expandBtn = byId("expandAllBtn");
+        if (expandBtn) expandBtn.onclick = function () {
+          var j;
+          for (j = 0; j < phases.length; j++) {
+            setCollapsed(phases[j], false, false);
+            collapsed[phases[j].getAttribute("data-phase")] = false;
+          }
+          saveCollapsed();
+        };
+
+        var collapseBtn = byId("collapseAllBtn");
+        if (collapseBtn) collapseBtn.onclick = function () {
+          var j;
+          for (j = 0; j < phases.length; j++) {
+            setCollapsed(phases[j], true, false);
+            collapsed[phases[j].getAttribute("data-phase")] = true;
+          }
+          saveCollapsed();
+        };
+
+        var jumpBtn = byId("jumpBtn");
+        if (jumpBtn) jumpBtn.onclick = function () {
+          var iso = localISO(), target = null, j;
+          for (j = 0; j < tasks.length; j++) {
+            if (tasks[j].getAttribute("data-date") === iso) { target = tasks[j]; break; }
+          }
+          if (!target) target = firstUnfinishedTask();
+          scrollToTask(target);
+        };
+
+        var resetBtn = byId("resetBtn");
+        if (resetBtn) resetBtn.onclick = function () {
+          if (window.confirm("Reset all progress and notes?")) {
+            state = {};
+            collapsed = {};
+            safeRemove(KEY);
+            safeRemove(COLLAPSEKEY);
+            var notes = byId("notes");
+            if (notes) notes.value = "";
+            safeRemove(NOTEKEY);
+            refresh();
+          }
+        };
+
+        var notes = byId("notes");
+        if (notes) {
+          var noteValue = safeGet(NOTEKEY), j;
+          if (noteValue === null) {
+            for (j = 0; j < OLD_NOTES.length; j++) {
+              noteValue = safeGet(OLD_NOTES[j]);
+              if (noteValue !== null) break;
+            }
+          }
+          notes.value = noteValue || "";
+          notes.oninput = function () { safeSet(NOTEKEY, notes.value); };
+          notes.onchange = function () { safeSet(NOTEKEY, notes.value); };
+        }
+
+        var exportBtn = byId("exportBtn");
+        if (exportBtn) exportBtn.onclick = function () {
+          var notes2 = byId("notes");
+          var data = JSON.stringify({
+            state: state,
+            collapsed: collapsed,
+            notes: notes2 ? notes2.value : "",
+            exportedAt: new Date().toISOString()
+          }, null, 2);
+
+          try {
+            var blob = new Blob([data], { type: "application/json" });
+            var url = (window.URL || window.webkitURL).createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = "UPESSC_Botany_Progress.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.setTimeout(function () {
+              try { (window.URL || window.webkitURL).revokeObjectURL(url); } catch (e) { }
+            }, 1000);
+          } catch (e) {
+            window.alert("Export is not supported in this Safari view. Open the file in Safari itself and try again.");
+          }
+        };
+
+        var importBtn = byId("importBtn");
+        var importFile = byId("importFile");
+        if (importBtn && importFile) {
+          importBtn.onclick = function () { importFile.click(); };
+          importFile.onchange = function () {
+            var f = importFile.files && importFile.files[0];
+            if (!f || !window.FileReader) return;
+            var r = new FileReader();
+            r.onload = function () {
+              try {
+                var d = JSON.parse(r.result);
+                var notes3 = byId("notes"), j;
+                state = d && d.state && typeof d.state === "object" ? d.state : {};
+                collapsed = d && d.collapsed && typeof d.collapsed === "object" ? d.collapsed : {};
+                for (j = 0; j < phases.length; j++) {
+                  setCollapsed(phases[j], !!collapsed[phases[j].getAttribute("data-phase")], false);
+                }
+                if (notes3 && d && typeof d.notes === "string") {
+                  notes3.value = d.notes;
+                  safeSet(NOTEKEY, d.notes);
+                }
+                saveState();
+                saveCollapsed();
+                refresh();
+              } catch (err) {
+                window.alert("Invalid progress file.");
+              }
+              importFile.value = "";
+            };
+            r.readAsText(f);
+          };
+        }
+      }
+
+      loadState();
+      bindEvents();
+      refresh();
+
+      /* Recalculate after Safari finishes first layout / returns from background. */
+      window.setTimeout(function () { updateProgress(); updateToday(); }, 150);
+      window.onpageshow = function () { updateProgress(); updateToday(); };
+    })();
+  </script>
+</body>
+
+</html>
